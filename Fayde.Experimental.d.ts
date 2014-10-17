@@ -200,8 +200,6 @@ declare module Fayde.Experimental {
         public OnCellMouseEnter(sender: any, e: Input.MouseEventArgs): void;
         public CellMouseLeave: RoutedEvent<CellMouseEventArgs>;
         public OnCellMouseLeave(sender: any, e: Input.MouseEventArgs): void;
-        public OnColumnAdded(index: number, newColumn: GridColumn): void;
-        public OnColumnRemoved(index: number): void;
         public OnColumnsCleared(): void;
         public OnColumnChanged(col: GridColumn): void;
         public OnItemsAdded(index: number, newItems: any[]): void;
