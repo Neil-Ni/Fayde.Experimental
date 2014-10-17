@@ -63,6 +63,7 @@ module Fayde.Experimental {
         get ItemsPresenter(): GridItemsPresenter { return this.XamlNode.ItemsPresenter; }
 
         static ItemsSourceProperty = DependencyProperty.Register("ItemsSource", () => IEnumerable_, GridItemsControl, null, (d, args) => (<GridItemsControl>d).OnItemsSourceChanged(args.OldValue, args.NewValue));
+        static ColumnsSourceProperty = DependencyProperty.Register("ColumnsSource", () => IEnumerable_, GridItemsControl, null, (d, args) => (<GridItemsControl>d).OnColumnsSourceChanged(args.OldValue, args.NewValue));
         static ColumnsProperty = DependencyProperty.RegisterImmutable<GridColumnCollection>("Columns", () => GridColumnCollection, GridItemsControl);
         static AdornersProperty = DependencyProperty.RegisterImmutable<Primitives.GridAdornerCollection>("Adorners", () => Primitives.GridAdornerCollection, GridItemsControl);
         static SelectedItemProperty = DependencyProperty.Register("SelectedItem", () => Object, GridItemsControl, undefined, (d, args) => (<GridItemsControl>d).OnSelectedItemChanged(args.OldValue, args.NewValue));
@@ -70,6 +71,7 @@ module Fayde.Experimental {
         static EditingItemProperty = DependencyProperty.Register("EditingItem", () => Object, GridItemsControl, undefined, (d, args) => (<GridItemsControl>d).OnEditingItemChanged(args.OldValue, args.NewValue));
         static EditingRowProperty = DependencyProperty.Register("EditingRow", () => Number, GridItemsControl, -1, (d, args) => (<GridItemsControl>d).OnEditingRowChanged(args.OldValue, args.NewValue));
         ItemsSource: IEnumerable<any>;
+        ColumnsSource: IEnumerable<any>;
         Columns: GridColumnCollection;
         Adorners: Primitives.GridAdornerCollection;
         SelectedItem: any;
@@ -116,6 +118,36 @@ module Fayde.Experimental {
                     break;
                 case Collections.CollectionChangedAction.Reset:
                     this._RemoveItems(0, e.OldItems);
+                    break;
+            }
+        }
+
+        OnColumnsSourceChanged(oldColumnsSource: IEnumerable<any>, newColumnsSource: IEnumerable<any>) {
+            var nc = Collections.INotifyCollectionChanged_.As(oldColumnsSource);
+            if (nc)
+                nc.CollectionChanged.Unsubscribe(this._OnColumnsSourceUpdated, this);
+            if (oldColumnsSource)
+                this._RemoveColumns(0, EnumerableEx.ToArray(oldColumnsSource));
+            if (newColumnsSource)
+                this._AddColumns(0, EnumerableEx.ToArray(newColumnsSource));
+            var nc = Collections.INotifyCollectionChanged_.As(newColumnsSource);
+            if (nc)
+                nc.CollectionChanged.Subscribe(this._OnColumnsSourceUpdated, this);
+        }
+        private _OnColumnsSourceUpdated(sender: any, e: Collections.CollectionChangedEventArgs) {
+            switch (e.Action) {
+                case Collections.CollectionChangedAction.Add:
+                    this._AddColumns(e.NewStartingIndex, e.NewItems);
+                    break;
+                case Collections.CollectionChangedAction.Remove:
+                    this._RemoveColumns(e.OldStartingIndex, e.OldItems);
+                    break;
+                case Collections.CollectionChangedAction.Replace:
+                    this._RemoveColumns(e.NewStartingIndex, e.OldItems);
+                    this._AddColumns(e.NewStartingIndex, e.NewItems);
+                    break;
+                case Collections.CollectionChangedAction.Reset:
+                    this._RemoveColumns(0, e.OldItems);
                     break;
             }
         }
@@ -184,6 +216,46 @@ module Fayde.Experimental {
             this.OnItemsRemoved(index, oldItems);
         }
 
+        private _createTextColumn(displayMemberPath: string): GridTextColumn {
+            var col = new GridTextColumn();
+            col.DisplayMemberPath = displayMemberPath;
+            return col;
+        }
+        
+        private _Columns: any[] = [];
+        private _AddColumns(index: number, newColumns: any[]) {
+            //TODO: For every new item
+            // Create GridTextColumn
+            // Set DisplayMemberPath to new item
+            // Add to Columns collection
+            // var _columns = this._Columns;
+            for (var i = 0, cols = this.Columns, len = newColumns.length; i < len; i++) {
+                var col = this._createTextColumn(newColumns[i]);
+                cols.Insert(index + i, col);
+                // _columns.splice(index + i, 0, col);
+                // public RemovedFromCollection(value: T, isValueSafe: boolean): void;
+
+            }
+        }
+        private _RemoveColumns(index: number, oldColumns: any[]) {
+            //TODO: For every old item
+            // Find our GridTextColumn that has DisplayMemberPath = old item
+            //      If exists, remove from Columns
+            // this._Columns.splice(index, oldColumns.length);
+            // if ()
+                // this._Columns.IndexOf(this._createTextColumn(oldColumns[i]))
+
+            for (var i = 0, cols = this.Columns, ht = cols._ht, len = oldColumns.length; i < len; i++) {
+                var c = oldColumns[i];
+                for (var j = 0; j < ht.length; j++ ) {
+                    if (c === (<GridTextColumn>ht[j]).DisplayMemberPath) {
+                        cols.RemoveAt(j);
+                        break;
+                    }
+                }
+            }
+        }
+
         get ToggleEditCommand(): MVVM.RelayCommand { return this._ToggleEditCommand; }
 
         constructor() {
@@ -225,6 +297,30 @@ module Fayde.Experimental {
             }
         }
 
+        // OnColumnsAdded(index: number, newColumns: any[]) {
+        //     var presenter = this.XamlNode.ItemsPresenter;
+        //     if (presenter)
+        //         presenter.OnColumnsAdded(index, newColumns);
+        //     var item = this.SelectedItem;
+        //     var row = this.SelectedRow;
+        //     if (item === undefined && row > -1) {
+        //         this.SetCurrentValue(GridItemsControl.SelectedItemProperty, this._Columns[row]);
+        //     } else if (item !== undefined && row < 0) {
+        //         this.SetCurrentValue(GridItemsControl.SelectedRowProperty, this._Columns.indexOf(item));
+        //     }
+        // }
+        // OnColumnsRemoved(index: number, oldColumns: any[]) {
+        //     var presenter = this.XamlNode.ItemsPresenter;
+        //     if (presenter)
+        //         presenter.OnColumnsRemoved(index, oldColumns);
+        //     var item = this.SelectedItem;
+        //     var row = this.SelectedRow;
+        //     if (item !== undefined && oldColumns.indexOf(item) > -1) {
+        //         this.SetCurrentValue(GridItemsControl.SelectedItemProperty, undefined);
+        //     } else if (row > -1 && (row >= index && row < (index + oldColumns.length))) {
+        //         this.SetCurrentValue(GridItemsControl.SelectedRowProperty, -1);
+        //     }
+        // }
         private _ColumnsChanged(sender: any, e: Collections.CollectionChangedEventArgs) {
             var presenter = this.XamlNode.ItemsPresenter;
             if (!presenter)

@@ -230,6 +230,11 @@ var Fayde;
                 presenter.LinkControl(args.NewValue);
             };
 
+            GridHeadersControl.prototype._AddHeaders = function (index, newItems) {
+            };
+            GridHeadersControl.prototype._RemoveHeaders = function (index, oldItems) {
+            };
+
             GridHeadersControl.prototype._HeadersChanged = function (sender, e) {
                 var presenter = this.XamlNode.HeadersPresenter;
                 if (!presenter)
@@ -512,6 +517,7 @@ var Fayde;
                 this._IsCoercingSel = false;
                 this._IsCoercingEdit = false;
                 this._Items = [];
+                this._Columns = [];
                 this.DefaultStyleKey = this.constructor;
 
                 this._ToggleEditCommand = new Fayde.MVVM.RelayCommand(function (args) {
@@ -586,6 +592,36 @@ var Fayde;
                 }
             };
 
+            GridItemsControl.prototype.OnColumnsSourceChanged = function (oldColumnsSource, newColumnsSource) {
+                var nc = Fayde.Collections.INotifyCollectionChanged_.As(oldColumnsSource);
+                if (nc)
+                    nc.CollectionChanged.Unsubscribe(this._OnColumnsSourceUpdated, this);
+                if (oldColumnsSource)
+                    this._RemoveColumns(0, Experimental.EnumerableEx.ToArray(oldColumnsSource));
+                if (newColumnsSource)
+                    this._AddColumns(0, Experimental.EnumerableEx.ToArray(newColumnsSource));
+                var nc = Fayde.Collections.INotifyCollectionChanged_.As(newColumnsSource);
+                if (nc)
+                    nc.CollectionChanged.Subscribe(this._OnColumnsSourceUpdated, this);
+            };
+            GridItemsControl.prototype._OnColumnsSourceUpdated = function (sender, e) {
+                switch (e.Action) {
+                    case 1 /* Add */:
+                        this._AddColumns(e.NewStartingIndex, e.NewItems);
+                        break;
+                    case 2 /* Remove */:
+                        this._RemoveColumns(e.OldStartingIndex, e.OldItems);
+                        break;
+                    case 3 /* Replace */:
+                        this._RemoveColumns(e.NewStartingIndex, e.OldItems);
+                        this._AddColumns(e.NewStartingIndex, e.NewItems);
+                        break;
+                    case 4 /* Reset */:
+                        this._RemoveColumns(0, e.OldItems);
+                        break;
+                }
+            };
+
             GridItemsControl.prototype.OnSelectedItemChanged = function (oldItem, newItem) {
                 if (this._IsCoercingSel)
                     return;
@@ -649,6 +685,30 @@ var Fayde;
             GridItemsControl.prototype._RemoveItems = function (index, oldItems) {
                 this._Items.splice(index, oldItems.length);
                 this.OnItemsRemoved(index, oldItems);
+            };
+
+            GridItemsControl.prototype._createTextColumn = function (displayMemberPath) {
+                var col = new Experimental.GridTextColumn();
+                col.DisplayMemberPath = displayMemberPath;
+                return col;
+            };
+
+            GridItemsControl.prototype._AddColumns = function (index, newColumns) {
+                for (var i = 0, cols = this.Columns, len = newColumns.length; i < len; i++) {
+                    var col = this._createTextColumn(newColumns[i]);
+                    cols.Insert(index + i, col);
+                }
+            };
+            GridItemsControl.prototype._RemoveColumns = function (index, oldColumns) {
+                for (var i = 0, cols = this.Columns, ht = cols._ht, len = oldColumns.length; i < len; i++) {
+                    var c = oldColumns[i];
+                    for (var j = 0; j < ht.length; j++) {
+                        if (c === ht[j].DisplayMemberPath) {
+                            cols.RemoveAt(j);
+                            break;
+                        }
+                    }
+                }
             };
 
             Object.defineProperty(GridItemsControl.prototype, "ToggleEditCommand", {
@@ -734,6 +794,11 @@ var Fayde;
                 return Fayde.IEnumerable_;
             }, GridItemsControl, null, function (d, args) {
                 return d.OnItemsSourceChanged(args.OldValue, args.NewValue);
+            });
+            GridItemsControl.ColumnsSourceProperty = DependencyProperty.Register("ColumnsSource", function () {
+                return Fayde.IEnumerable_;
+            }, GridItemsControl, null, function (d, args) {
+                return d.OnColumnsSourceChanged(args.OldValue, args.NewValue);
             });
             GridItemsControl.ColumnsProperty = DependencyProperty.RegisterImmutable("Columns", function () {
                 return Experimental.GridColumnCollection;

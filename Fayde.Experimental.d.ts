@@ -77,6 +77,8 @@ declare module Fayde.Experimental {
         static HeadersProperty: ImmutableDependencyProperty<GridHeaderCollection>;
         public Headers: GridHeaderCollection;
         constructor();
+        private _AddHeaders(index, newItems);
+        private _RemoveHeaders(index, oldItems);
         private _HeadersChanged(sender, e);
         private _HeaderChanged(sender, e);
     }
@@ -126,6 +128,7 @@ declare module Fayde.Experimental {
         public IsItemsControl : boolean;
         public ItemsPresenter : GridItemsPresenter;
         static ItemsSourceProperty: DependencyProperty;
+        static ColumnsSourceProperty: DependencyProperty;
         static ColumnsProperty: ImmutableDependencyProperty<GridColumnCollection>;
         static AdornersProperty: ImmutableDependencyProperty<Primitives.GridAdornerCollection>;
         static SelectedItemProperty: DependencyProperty;
@@ -133,6 +136,7 @@ declare module Fayde.Experimental {
         static EditingItemProperty: DependencyProperty;
         static EditingRowProperty: DependencyProperty;
         public ItemsSource: IEnumerable<any>;
+        public ColumnsSource: IEnumerable<any>;
         public Columns: GridColumnCollection;
         public Adorners: Primitives.GridAdornerCollection;
         public SelectedItem: any;
@@ -145,6 +149,8 @@ declare module Fayde.Experimental {
         public OnEditingChanged(): void;
         public OnItemsSourceChanged(oldItemsSource: IEnumerable<any>, newItemsSource: IEnumerable<any>): void;
         private _OnItemsSourceUpdated(sender, e);
+        public OnColumnsSourceChanged(oldColumnsSource: IEnumerable<any>, newColumnsSource: IEnumerable<any>): void;
+        private _OnColumnsSourceUpdated(sender, e);
         private _IsCoercingSel;
         public OnSelectedItemChanged(oldItem: any, newItem: any): void;
         public OnSelectedRowChanged(oldRow: number, newRow: number): void;
@@ -156,6 +162,10 @@ declare module Fayde.Experimental {
         public Items : any[];
         private _AddItems(index, newItems);
         private _RemoveItems(index, oldItems);
+        private _createTextColumn(displayMemberPath);
+        private _Columns;
+        private _AddColumns(index, newColumns);
+        private _RemoveColumns(index, oldColumns);
         public ToggleEditCommand : MVVM.RelayCommand;
         constructor();
         public OnItemsAdded(index: number, newItems: any[]): void;

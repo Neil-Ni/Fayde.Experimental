@@ -59,6 +59,8 @@ declare module Fayde.Collections {
         public NewStartingIndex: number;
         public OldItems: any[];
         public NewItems: any[];
+        public OldColumns: any[];
+        public NewColumns: any[];
         static Reset(allValues: any[]): CollectionChangedEventArgs;
         static Replace(newValue: any, oldValue: any, index: number): CollectionChangedEventArgs;
         static Add(newValue: any, index: number): CollectionChangedEventArgs;
@@ -2185,6 +2187,8 @@ declare module Fayde.Controls {
         static Get(panel: Panel): ItemsPresenter;
         public OnItemsAdded(index: number, newItems: any[]): void;
         public OnItemsRemoved(index: number, oldItems: any[]): void;
+        public OnColumnsAdded(index: number, newColumns: any[]): void;
+        public OnColumnsRemoved(index: number, oldColumns: any[]): void;
     }
 }
 declare module Fayde.Controls {
