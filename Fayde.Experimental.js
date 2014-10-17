@@ -230,9 +230,58 @@ var Fayde;
                 presenter.LinkControl(args.NewValue);
             };
 
-            GridHeadersControl.prototype._AddHeaders = function (index, newItems) {
+            GridHeadersControl.prototype.OnHeadersSourceChanged = function (oldHeadersSource, newHeadersSource) {
+                var nc = Fayde.Collections.INotifyCollectionChanged_.As(oldHeadersSource);
+                if (nc)
+                    nc.CollectionChanged.Unsubscribe(this._OnHeadersSourceUpdated, this);
+                if (oldHeadersSource)
+                    this._RemoveHeaders(0, Experimental.EnumerableEx.ToArray(oldHeadersSource));
+                if (newHeadersSource)
+                    this._AddHeaders(0, Experimental.EnumerableEx.ToArray(newHeadersSource));
+                var nc = Fayde.Collections.INotifyCollectionChanged_.As(newHeadersSource);
+                if (nc)
+                    nc.CollectionChanged.Subscribe(this._OnHeadersSourceUpdated, this);
             };
-            GridHeadersControl.prototype._RemoveHeaders = function (index, oldItems) {
+            GridHeadersControl.prototype._OnHeadersSourceUpdated = function (sender, e) {
+                switch (e.Action) {
+                    case 1 /* Add */:
+                        this._AddHeaders(e.NewStartingIndex, e.NewItems);
+                        break;
+                    case 2 /* Remove */:
+                        this._RemoveHeaders(e.OldStartingIndex, e.OldItems);
+                        break;
+                    case 3 /* Replace */:
+                        this._RemoveHeaders(e.NewStartingIndex, e.OldItems);
+                        this._AddHeaders(e.NewStartingIndex, e.NewItems);
+                        break;
+                    case 4 /* Reset */:
+                        this._RemoveHeaders(0, e.OldItems);
+                        break;
+                }
+            };
+
+            GridHeadersControl.prototype._createHeader = function (header) {
+                var hdr = new Experimental.GridHeader();
+                hdr.Header = header;
+                return hdr;
+            };
+
+            GridHeadersControl.prototype._AddHeaders = function (index, newHeaders) {
+                for (var i = 0, hdrs = this.Headers, len = newHeaders.length; i < len; i++) {
+                    var hrd = this._createHeader(newHeaders[i]);
+                    hdrs.Insert(index + i, hrd);
+                }
+            };
+            GridHeadersControl.prototype._RemoveHeaders = function (index, oldHeaders) {
+                for (var i = 0, hrds = this.Headers, ht = hrds._ht, len = oldHeaders.length; i < len; i++) {
+                    var c = oldHeaders[i];
+                    for (var j = 0; j < ht.length; j++) {
+                        if (c === ht[j].Header) {
+                            hrds.RemoveAt(j);
+                            break;
+                        }
+                    }
+                }
             };
 
             GridHeadersControl.prototype._HeadersChanged = function (sender, e) {
@@ -274,6 +323,11 @@ var Fayde;
             GridHeadersControl.HeadersProperty = DependencyProperty.RegisterImmutable("Headers", function () {
                 return Experimental.GridHeaderCollection;
             }, GridHeadersControl);
+            GridHeadersControl.HeadersSourceProperty = DependencyProperty.Register("HeadersSource", function () {
+                return Fayde.IEnumerable_;
+            }, GridHeadersControl, null, function (d, args) {
+                return d.OnHeadersSourceChanged(args.OldValue, args.NewValue);
+            });
             return GridHeadersControl;
         })(Fayde.Controls.Control);
         Experimental.GridHeadersControl = GridHeadersControl;
@@ -517,7 +571,6 @@ var Fayde;
                 this._IsCoercingSel = false;
                 this._IsCoercingEdit = false;
                 this._Items = [];
-                this._Columns = [];
                 this.DefaultStyleKey = this.constructor;
 
                 this._ToggleEditCommand = new Fayde.MVVM.RelayCommand(function (args) {

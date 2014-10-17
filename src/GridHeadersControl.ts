@@ -29,6 +29,7 @@ module Fayde.Experimental {
         }
 
         static HeadersProperty = DependencyProperty.RegisterImmutable<GridHeaderCollection>("Headers", () => GridHeaderCollection, GridHeadersControl);
+        static HeadersSourceProperty = DependencyProperty.Register("HeadersSource", () => IEnumerable_, GridHeadersControl, null, (d, args) => (<GridHeadersControl>d).OnHeadersSourceChanged(args.OldValue, args.NewValue));
         Headers: GridHeaderCollection;
 
         constructor() {
@@ -39,16 +40,58 @@ module Fayde.Experimental {
             coll.ItemChanged.Subscribe(this._HeaderChanged, this);
         }
 
-        private _AddHeaders(index: number, newItems: any[]) {
-            //TODO: For every new item
-            // Create GridHeader
-            // Set Header to new item
-            // Add to Headers collection
+        OnHeadersSourceChanged(oldHeadersSource: IEnumerable<any>, newHeadersSource: IEnumerable<any>) {
+            var nc = Collections.INotifyCollectionChanged_.As(oldHeadersSource);
+            if (nc)
+                nc.CollectionChanged.Unsubscribe(this._OnHeadersSourceUpdated, this);
+            if (oldHeadersSource)
+                this._RemoveHeaders(0, EnumerableEx.ToArray(oldHeadersSource));
+            if (newHeadersSource)
+                this._AddHeaders(0, EnumerableEx.ToArray(newHeadersSource));
+            var nc = Collections.INotifyCollectionChanged_.As(newHeadersSource);
+            if (nc)
+                nc.CollectionChanged.Subscribe(this._OnHeadersSourceUpdated, this);
         }
-        private _RemoveHeaders(index: number, oldItems: any[]) {
-            //TODO: For every old item
-            // Find our GridHeader that has Header = old item
-            //      If exists, remove from Headers collection
+        private _OnHeadersSourceUpdated(sender: any, e: Collections.CollectionChangedEventArgs) {
+            switch (e.Action) {
+                case Collections.CollectionChangedAction.Add:
+                    this._AddHeaders(e.NewStartingIndex, e.NewItems);
+                    break;
+                case Collections.CollectionChangedAction.Remove:
+                    this._RemoveHeaders(e.OldStartingIndex, e.OldItems);
+                    break;
+                case Collections.CollectionChangedAction.Replace:
+                    this._RemoveHeaders(e.NewStartingIndex, e.OldItems);
+                    this._AddHeaders(e.NewStartingIndex, e.NewItems);
+                    break;
+                case Collections.CollectionChangedAction.Reset:
+                    this._RemoveHeaders(0, e.OldItems);
+                    break;
+            }
+        }
+
+        private _createHeader(header: string): GridHeader {
+            var hdr = new GridHeader();
+            hdr.Header = header;
+            return hdr;
+        }
+
+        private _AddHeaders(index: number, newHeaders: any[]) {
+            for (var i = 0, hdrs = this.Headers, len = newHeaders.length; i < len; i++) {
+                var hrd = this._createHeader(newHeaders[i]);
+                hdrs.Insert(index + i, hrd);
+            }
+        }
+        private _RemoveHeaders(index: number, oldHeaders: any[]) {
+            for (var i = 0, hrds = this.Headers, ht = hrds._ht, len = oldHeaders.length; i < len; i++) {
+                var c = oldHeaders[i];
+                for (var j = 0; j < ht.length; j++ ) {
+                    if (c === (<GridHeader>ht[j]).Header) {
+                        hrds.RemoveAt(j);
+                        break;
+                    }
+                }
+            }
         }
 
         private _HeadersChanged(sender: any, e: Collections.CollectionChangedEventArgs) {

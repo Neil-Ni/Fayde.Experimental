@@ -75,10 +75,14 @@ declare module Fayde.Experimental {
         public ItemsControl: GridItemsControl;
         private OnItemsControlChanged(args);
         static HeadersProperty: ImmutableDependencyProperty<GridHeaderCollection>;
+        static HeadersSourceProperty: DependencyProperty;
         public Headers: GridHeaderCollection;
         constructor();
-        private _AddHeaders(index, newItems);
-        private _RemoveHeaders(index, oldItems);
+        public OnHeadersSourceChanged(oldHeadersSource: IEnumerable<any>, newHeadersSource: IEnumerable<any>): void;
+        private _OnHeadersSourceUpdated(sender, e);
+        private _createHeader(header);
+        private _AddHeaders(index, newHeaders);
+        private _RemoveHeaders(index, oldHeaders);
         private _HeadersChanged(sender, e);
         private _HeaderChanged(sender, e);
     }
@@ -163,7 +167,6 @@ declare module Fayde.Experimental {
         private _AddItems(index, newItems);
         private _RemoveItems(index, oldItems);
         private _createTextColumn(displayMemberPath);
-        private _Columns;
         private _AddColumns(index, newColumns);
         private _RemoveColumns(index, oldColumns);
         public ToggleEditCommand : MVVM.RelayCommand;

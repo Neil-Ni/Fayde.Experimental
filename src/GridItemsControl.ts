@@ -222,29 +222,13 @@ module Fayde.Experimental {
             return col;
         }
         
-        private _Columns: any[] = [];
         private _AddColumns(index: number, newColumns: any[]) {
-            //TODO: For every new item
-            // Create GridTextColumn
-            // Set DisplayMemberPath to new item
-            // Add to Columns collection
-            // var _columns = this._Columns;
             for (var i = 0, cols = this.Columns, len = newColumns.length; i < len; i++) {
                 var col = this._createTextColumn(newColumns[i]);
                 cols.Insert(index + i, col);
-                // _columns.splice(index + i, 0, col);
-                // public RemovedFromCollection(value: T, isValueSafe: boolean): void;
-
             }
         }
         private _RemoveColumns(index: number, oldColumns: any[]) {
-            //TODO: For every old item
-            // Find our GridTextColumn that has DisplayMemberPath = old item
-            //      If exists, remove from Columns
-            // this._Columns.splice(index, oldColumns.length);
-            // if ()
-                // this._Columns.IndexOf(this._createTextColumn(oldColumns[i]))
-
             for (var i = 0, cols = this.Columns, ht = cols._ht, len = oldColumns.length; i < len; i++) {
                 var c = oldColumns[i];
                 for (var j = 0; j < ht.length; j++ ) {
@@ -297,30 +281,6 @@ module Fayde.Experimental {
             }
         }
 
-        // OnColumnsAdded(index: number, newColumns: any[]) {
-        //     var presenter = this.XamlNode.ItemsPresenter;
-        //     if (presenter)
-        //         presenter.OnColumnsAdded(index, newColumns);
-        //     var item = this.SelectedItem;
-        //     var row = this.SelectedRow;
-        //     if (item === undefined && row > -1) {
-        //         this.SetCurrentValue(GridItemsControl.SelectedItemProperty, this._Columns[row]);
-        //     } else if (item !== undefined && row < 0) {
-        //         this.SetCurrentValue(GridItemsControl.SelectedRowProperty, this._Columns.indexOf(item));
-        //     }
-        // }
-        // OnColumnsRemoved(index: number, oldColumns: any[]) {
-        //     var presenter = this.XamlNode.ItemsPresenter;
-        //     if (presenter)
-        //         presenter.OnColumnsRemoved(index, oldColumns);
-        //     var item = this.SelectedItem;
-        //     var row = this.SelectedRow;
-        //     if (item !== undefined && oldColumns.indexOf(item) > -1) {
-        //         this.SetCurrentValue(GridItemsControl.SelectedItemProperty, undefined);
-        //     } else if (row > -1 && (row >= index && row < (index + oldColumns.length))) {
-        //         this.SetCurrentValue(GridItemsControl.SelectedRowProperty, -1);
-        //     }
-        // }
         private _ColumnsChanged(sender: any, e: Collections.CollectionChangedEventArgs) {
             var presenter = this.XamlNode.ItemsPresenter;
             if (!presenter)
