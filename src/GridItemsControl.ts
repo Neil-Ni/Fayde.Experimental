@@ -134,6 +134,7 @@ module Fayde.Experimental {
             if (nc)
                 nc.CollectionChanged.Subscribe(this._OnColumnsSourceUpdated, this);
         }
+
         private _OnColumnsSourceUpdated(sender: any, e: Collections.CollectionChangedEventArgs) {
             switch (e.Action) {
                 case Collections.CollectionChangedAction.Add:
@@ -219,6 +220,7 @@ module Fayde.Experimental {
         private _createTextColumn(displayMemberPath: string): GridTextColumn {
             var col = new GridTextColumn();
             col.DisplayMemberPath = displayMemberPath;
+            col.IsEditable = true;
             return col;
         }
         

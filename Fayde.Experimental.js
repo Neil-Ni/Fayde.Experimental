@@ -657,6 +657,7 @@ var Fayde;
                 if (nc)
                     nc.CollectionChanged.Subscribe(this._OnColumnsSourceUpdated, this);
             };
+
             GridItemsControl.prototype._OnColumnsSourceUpdated = function (sender, e) {
                 switch (e.Action) {
                     case 1 /* Add */:
@@ -743,6 +744,7 @@ var Fayde;
             GridItemsControl.prototype._createTextColumn = function (displayMemberPath) {
                 var col = new Experimental.GridTextColumn();
                 col.DisplayMemberPath = displayMemberPath;
+                col.IsEditable = true;
                 return col;
             };
 
