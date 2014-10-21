@@ -339,6 +339,11 @@ declare module Fayde.Experimental {
     }
 }
 declare module Fayde.Experimental {
+    class GridTemplateCell extends GridCell {
+        public GoToStateEditing(gotoFunc: (state: string) => boolean): boolean;
+    }
+}
+declare module Fayde.Experimental {
     class GridTextCell extends GridInputCell {
         constructor();
     }
@@ -404,6 +409,8 @@ declare module Fayde.Experimental {
         static EditTemplateProperty: DependencyProperty;
         public DisplayTemplate: DataTemplate;
         public EditTemplate: DataTemplate;
+        constructor();
+        public GetContainerForCell(item: any): UIElement;
         public PrepareContainerForCell(cell: UIElement, item: any): void;
         public ClearContainerForCell(cell: UIElement, item: any): void;
     }

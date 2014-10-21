@@ -9,6 +9,14 @@ module Fayde.Experimental {
         DisplayTemplate: DataTemplate;
         EditTemplate: DataTemplate;
 
+        constructor() {
+            super();
+            this.IsEditable = true;
+        }
+
+        GetContainerForCell(item: any): UIElement {
+            return new GridTemplateCell();
+        }
         PrepareContainerForCell(cell: UIElement, item: any) {
             super.PrepareContainerForCell(cell, item);
 

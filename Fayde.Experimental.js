@@ -1491,7 +1491,7 @@ var Fayde;
             __extends(GridCell, _super);
             function GridCell() {
                 _super.call(this);
-                this.DefaultStyleKey = this.constructor;
+                this.DefaultStyleKey = GridCell;
             }
             GridCell.prototype.OnIsEditingChanged = function (oldIsEditing, newIsEditing) {
                 this.UpdateVisualState();
@@ -1666,6 +1666,25 @@ var Fayde;
         Experimental.GridNumericCell = GridNumericCell;
         Fayde.Controls.TemplateParts(GridNumericCell, { Name: "Presenter", Type: Fayde.FrameworkElement }, { Name: "Editor", Type: Fayde.FrameworkElement });
         Fayde.Controls.TemplateVisualStates(GridNumericCell, { GroupName: "EditStates", Name: "Display" }, { GroupName: "EditStates", Name: "Edit" }, { GroupName: "EditStates", Name: "NotEditable" });
+    })(Fayde.Experimental || (Fayde.Experimental = {}));
+    var Experimental = Fayde.Experimental;
+})(Fayde || (Fayde = {}));
+var Fayde;
+(function (Fayde) {
+    (function (Experimental) {
+        var GridTemplateCell = (function (_super) {
+            __extends(GridTemplateCell, _super);
+            function GridTemplateCell() {
+                _super.apply(this, arguments);
+            }
+            GridTemplateCell.prototype.GoToStateEditing = function (gotoFunc) {
+                if (!this.EditTemplate)
+                    return gotoFunc("Display");
+                return gotoFunc(this.IsEditing ? (this.IsEditable ? "Edit" : "NotEditable") : "Display");
+            };
+            return GridTemplateCell;
+        })(Experimental.GridCell);
+        Experimental.GridTemplateCell = GridTemplateCell;
     })(Fayde.Experimental || (Fayde.Experimental = {}));
     var Experimental = Fayde.Experimental;
 })(Fayde || (Fayde = {}));
@@ -1945,8 +1964,12 @@ var Fayde;
         var GridTemplateColumn = (function (_super) {
             __extends(GridTemplateColumn, _super);
             function GridTemplateColumn() {
-                _super.apply(this, arguments);
+                _super.call(this);
+                this.IsEditable = true;
             }
+            GridTemplateColumn.prototype.GetContainerForCell = function (item) {
+                return new Experimental.GridTemplateCell();
+            };
             GridTemplateColumn.prototype.PrepareContainerForCell = function (cell, item) {
                 _super.prototype.PrepareContainerForCell.call(this, cell, item);
 
