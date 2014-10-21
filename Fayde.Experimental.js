@@ -380,10 +380,25 @@ var Fayde;
         var GridHeadersPresenter = (function (_super) {
             __extends(GridHeadersPresenter, _super);
             function GridHeadersPresenter() {
-                _super.apply(this, arguments);
+                _super.call(this);
                 this._Headers = [];
                 this._HeaderContainers = [];
+                this._ColumnsListener = null;
                 this._LinkedItemsControl = null;
+                var _this = this;
+                this._ColumnsListener = {
+                    ColumnDefinitionsChanged: function (colDefinitions) {
+                        var coldefs = _this.Panel.ColumnDefinitions;
+                        for (var en = coldefs.getEnumerator(); en.moveNext();) {
+                            en.current.Unlink();
+                        }
+                        for (var ensrc = coldefs.getEnumerator(), endest = colDefinitions.getEnumerator(); ensrc.moveNext() && endest.moveNext();) {
+                            var hcd = ensrc.current;
+                            hcd.Width = endest.current.Width.Clone();
+                            hcd.Link(endest.current);
+                        }
+                    }
+                };
             }
             GridHeadersPresenter.prototype.CreateNode = function () {
                 return new GridHeadersPresenterNode(this);
@@ -487,10 +502,12 @@ var Fayde;
                 for (var i = 0, defs = grid.ColumnDefinitions, len = defs.Count; i < len; i++) {
                     defs.GetValueAt(i).Link(linkedDefs.GetValueAt(i));
                 }
+                presenter.Panel.ColumnDefinitions.Listen(this._ColumnsListener);
             };
             GridHeadersPresenter.prototype.UnlinkControl = function (gic) {
                 if (!gic)
                     return;
+                gic.ItemsPresenter.Panel.ColumnDefinitions.Unlisten(this._ColumnsListener);
                 var grid = this.Panel;
                 for (var i = 0, defs = grid.ColumnDefinitions, len = defs.Count; i < len; i++) {
                     defs.GetValueAt(i).Unlink();
@@ -821,6 +838,9 @@ var Fayde;
                     case 4 /* Reset */:
                         presenter.OnColumnsCleared();
                         break;
+                }
+                for (var en = this.Adorners.getEnumerator(); en.moveNext();) {
+                    en.current.OnShapeChanged(this);
                 }
             };
             GridItemsControl.prototype._ColumnChanged = function (sender, e) {
@@ -1241,6 +1261,8 @@ var Fayde;
                 };
                 GridAdorner.prototype.OnDetached = function (gic) {
                 };
+                GridAdorner.prototype.OnShapeChanged = function (gic) {
+                };
                 return GridAdorner;
             })(Fayde.DependencyObject);
             Primitives.GridAdorner = GridAdorner;
@@ -1335,6 +1357,11 @@ var Fayde;
                 grid.Children.Remove(this._ForegroundElement);
                 this._Element = null;
                 this._ForegroundElement = null;
+            };
+            HoveredRowAdorner.prototype.OnShapeChanged = function (gic) {
+                var grid = gic.ItemsPresenter.Panel;
+                Grid.SetColumnSpan(this._Element, grid.ColumnDefinitions.Count);
+                Grid.SetColumnSpan(this._ForegroundElement, grid.ColumnDefinitions.Count);
             };
             HoveredRowAdorner.prototype._CellMouseEnter = function (sender, e) {
                 this._SetHoverRow(Grid.GetRow(e.Cell));
@@ -1436,6 +1463,10 @@ var Fayde;
                 var grid = gic.ItemsPresenter.Panel;
                 grid.Children.Remove(this._Element);
                 this._Element = null;
+            };
+            SelectedRowAdorner.prototype.OnShapeChanged = function (gic) {
+                var grid = gic.ItemsPresenter.Panel;
+                Grid.SetColumnSpan(this._Element, grid.ColumnDefinitions.Count);
             };
             SelectedRowAdorner.prototype._SelectionChanged = function (sender, e) {
                 this._Update(e.Item, e.Row);

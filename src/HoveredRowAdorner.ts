@@ -84,6 +84,11 @@ module Fayde.Experimental {
             this._Element = null;
             this._ForegroundElement = null;
         }
+        OnShapeChanged(gic: GridItemsControl) {
+            var grid = gic.ItemsPresenter.Panel;
+            Grid.SetColumnSpan(this._Element, grid.ColumnDefinitions.Count);
+            Grid.SetColumnSpan(this._ForegroundElement, grid.ColumnDefinitions.Count);
+        }
         private _CellMouseEnter(sender: any, e: CellMouseEventArgs) {
             this._SetHoverRow(Grid.GetRow(e.Cell));
         }

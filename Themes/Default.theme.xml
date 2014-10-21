@@ -79,6 +79,7 @@
     <Style TargetType="exp:GridTextCell">
         <Setter Property="DisplayProperty" Value="Text" />
         <Setter Property="EditProperty" Value="Text" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="exp:GridTextCell">

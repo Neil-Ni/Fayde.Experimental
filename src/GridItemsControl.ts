@@ -306,6 +306,9 @@ module Fayde.Experimental {
                     presenter.OnColumnsCleared();
                     break;
             }
+            for (var en = this.Adorners.getEnumerator(); en.moveNext();) {
+                en.current.OnShapeChanged(this);
+            }
         }
         private _ColumnChanged(sender: any, e: Internal.ItemChangedEventArgs<GridColumn>) {
             var presenter = this.XamlNode.ItemsPresenter;

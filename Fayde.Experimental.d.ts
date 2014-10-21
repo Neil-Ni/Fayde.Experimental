@@ -103,6 +103,8 @@ declare module Fayde.Experimental {
         public Panel : Controls.Grid;
         private _Headers;
         private _HeaderContainers;
+        private _ColumnsListener;
+        constructor();
         public OnHeaderAdded(index: number, header: GridHeader): void;
         public OnHeaderRemoved(index: number): void;
         public OnHeadersCleared(): void;
@@ -227,6 +229,7 @@ declare module Fayde.Experimental.Primitives {
     class GridAdorner extends DependencyObject {
         public OnAttached(gic: GridItemsControl): void;
         public OnDetached(gic: GridItemsControl): void;
+        public OnShapeChanged(gic: GridItemsControl): void;
     }
     class GridAdornerCollection extends Internal.ItemChangedCollection<GridAdorner> {
     }
@@ -250,6 +253,7 @@ declare module Fayde.Experimental {
         public CreateForegroundElement(): UIElement;
         public OnAttached(gic: GridItemsControl): void;
         public OnDetached(gic: GridItemsControl): void;
+        public OnShapeChanged(gic: GridItemsControl): void;
         private _CellMouseEnter(sender, e);
         private _CellMouseLeave(sender, e);
         private _SetHoverRow(row);
@@ -272,6 +276,7 @@ declare module Fayde.Experimental {
         public CreateElement(): UIElement;
         public OnAttached(gic: GridItemsControl): void;
         public OnDetached(gic: GridItemsControl): void;
+        public OnShapeChanged(gic: GridItemsControl): void;
         private _SelectionChanged(sender, e);
         private _Update(item, row);
     }

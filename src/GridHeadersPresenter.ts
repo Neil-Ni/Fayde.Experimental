@@ -46,6 +46,25 @@ module Fayde.Experimental {
 
         private _Headers: GridHeader[] = [];
         private _HeaderContainers: UIElement[] = [];
+        private _ColumnsListener: Fayde.Controls.IColumnDefinitionsListener = null;
+
+        constructor() {
+            super();
+            var _this = this;
+            this._ColumnsListener = {
+                ColumnDefinitionsChanged(colDefinitions: Fayde.Controls.ColumnDefinitionCollection) {
+                    var coldefs = _this.Panel.ColumnDefinitions;
+                    for (var en = coldefs.getEnumerator(); en.moveNext();) {
+                        (<HeaderColumnDefinition>en.current).Unlink();
+                    }
+                    for (var ensrc = coldefs.getEnumerator(), endest = colDefinitions.getEnumerator(); ensrc.moveNext() && endest.moveNext();) {
+                        var hcd = <HeaderColumnDefinition>ensrc.current;
+                        hcd.Width = endest.current.Width.Clone();
+                        hcd.Link(endest.current);
+                    }
+                }
+            };
+        }
 
         OnHeaderAdded(index: number, header: GridHeader) {
             this._Headers.splice(index, 0, header);
@@ -125,10 +144,12 @@ module Fayde.Experimental {
             for (var i = 0, defs = grid.ColumnDefinitions, len = defs.Count; i < len; i++) {
                 (<HeaderColumnDefinition>defs.GetValueAt(i)).Link(linkedDefs.GetValueAt(i));
             }
+            presenter.Panel.ColumnDefinitions.Listen(this._ColumnsListener);
         }
         UnlinkControl(gic: GridItemsControl) {
             if (!gic)
                 return;
+            gic.ItemsPresenter.Panel.ColumnDefinitions.Unlisten(this._ColumnsListener);
             var grid = this.Panel;
             for (var i = 0, defs = grid.ColumnDefinitions, len = defs.Count; i < len; i++) {
                 (<HeaderColumnDefinition>defs.GetValueAt(i)).Unlink();

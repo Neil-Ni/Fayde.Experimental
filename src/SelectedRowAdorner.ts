@@ -61,6 +61,10 @@ module Fayde.Experimental {
             grid.Children.Remove(this._Element);
             this._Element = null;
         }
+        OnShapeChanged(gic: GridItemsControl) {
+            var grid = gic.ItemsPresenter.Panel;
+            Grid.SetColumnSpan(this._Element, grid.ColumnDefinitions.Count);
+        }
         private _SelectionChanged(sender: any, e: SelectionChangedEventArgs) {
             this._Update(e.Item, e.Row);
         }
